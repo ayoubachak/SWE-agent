@@ -172,6 +172,11 @@ class BaseModel:
 
 class OpenAIModel(BaseModel):
     MODELS = {
+        "lm-studio":{
+            "max_context": 32_768,
+            "cost_per_input_token": 0,
+            "cost_per_output_token": 0,            
+        },
         "gpt-3.5-turbo-0125": {
             "max_context": 16_385,
             "cost_per_input_token": 5e-07,
@@ -210,6 +215,7 @@ class OpenAIModel(BaseModel):
     }
 
     SHORTCUTS = {
+        "lms": "lm-studio",
         "gpt3": "gpt-3.5-turbo-1106",
         "gpt3-legacy": "gpt-3.5-turbo-16k-0613",
         "gpt4": "gpt-4-1106-preview",
@@ -228,6 +234,8 @@ class OpenAIModel(BaseModel):
             self.client = AzureOpenAI(api_key=cfg["AZURE_OPENAI_API_KEY"], azure_endpoint=cfg["AZURE_OPENAI_ENDPOINT"], api_version=cfg.get("AZURE_OPENAI_API_VERSION", "2024-02-01"))
         else:
             api_base_url: Optional[str] = cfg.get("OPENAI_API_BASE_URL", None)
+            print(f"{api_base_url=}")
+            print(f"openai_api_key={cfg['OPENAI_API_KEY']}")
             self.client = OpenAI(api_key=cfg["OPENAI_API_KEY"], base_url=api_base_url)
 
     def history_to_messages(
@@ -703,7 +711,7 @@ def get_model(args: ModelArguments, commands: Optional[list[Command]] = None):
         return HumanThoughtModel(args, commands)
     if args.model_name == "replay":
         return ReplayModel(args, commands)
-    elif args.model_name.startswith("gpt") or args.model_name.startswith("ft:gpt") or args.model_name.startswith("azure:gpt"):
+    elif args.model_name.startswith("gpt") or args.model_name.startswith("lm") or args.model_name.startswith("ft:gpt") or args.model_name.startswith("azure:gpt"):
         return OpenAIModel(args, commands)
     elif args.model_name.startswith("claude"):
         return AnthropicModel(args, commands)
